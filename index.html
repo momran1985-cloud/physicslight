@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>اختبار الضوء التفاعلي</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f5fb; --card:#ffffff; --ink:#1b2240; --muted:#68708f; --line:#e3e6f1;
+  --primary:#4f46e5; --primary-d:#3730a3; --primary-l:#eef0ff;
+  --ok:#15803d; --ok-l:#e7f7ec; --warn:#b45309; --warn-l:#fff4df; --bad:#b91c1c; --bad-l:#fdeaea;
+  --radius:16px; --shadow:0 8px 30px rgba(31,41,100,.08);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0}
+body{font-family:"Tajawal","Segoe UI",Tahoma,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;min-height:100vh}
+button,input{font-family:inherit;font-size:1rem}
+.app{max-width:860px;margin:0 auto;padding:16px 16px 48px}
+
+/* Top bar */
+.topbar{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin-bottom:18px;position:sticky;top:8px;z-index:5}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.who{font-weight:700}
+.who small{display:block;color:var(--muted);font-weight:400;font-size:.8rem}
+.score-chip{background:var(--primary-l);color:var(--primary-d);border-radius:999px;padding:6px 16px;font-weight:800;white-space:nowrap}
+.score-chip span{font-size:1.25rem}
+.bar{height:10px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:12px}
+.bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,#6366f1,#22c1c3);border-radius:999px;transition:width .4s ease}
+.bar-label{display:flex;justify-content:space-between;color:var(--muted);font-size:.82rem;margin-top:4px}
+
+/* Cards */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:26px}
+h1{margin:0 0 6px;font-size:1.7rem}
+h2{margin:0 0 10px;font-size:1.3rem}
+h3{margin:18px 0 8px;font-size:1.05rem}
+.lead{color:var(--muted);margin:0 0 20px}
+.std{background:var(--primary-l);border-radius:12px;padding:12px 16px;margin-bottom:22px;font-size:.95rem}
+.std b{color:var(--primary-d)}
+.std ol{margin:6px 0 0;padding-inline-start:20px}
+
+/* Form */
+.field{margin-bottom:16px}
+label{display:block;font-weight:700;margin-bottom:6px}
+input[type=text]{width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);transition:border-color .2s}
+input[type=text]:focus{outline:none;border-color:var(--primary)}
+.hint{color:var(--muted);font-size:.82rem;margin-top:4px}
+.error{color:var(--bad);font-size:.88rem;margin-top:4px;min-height:1.2em}
+
+/* Buttons */
+.btn{border:0;border-radius:12px;padding:12px 24px;font-weight:700;cursor:pointer;transition:transform .1s,background .2s,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--primary-d)}
+.btn-ghost{background:#fff;color:var(--primary-d);border:2px solid var(--primary)}
+.btn-ghost:hover:not(:disabled){background:var(--primary-l)}
+.btn-light{background:var(--line);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-block{width:100%}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.actions.between{justify-content:space-between}
+
+/* Stepper */
+.stepper{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.pill{padding:5px 14px;border-radius:999px;background:var(--line);color:var(--muted);font-size:.85rem;font-weight:700}
+.pill.current{background:var(--primary);color:#fff}
+.pill.done{background:var(--ok-l);color:var(--ok)}
+
+/* Question */
+.ind-title{color:var(--primary-d);font-weight:800;font-size:.95rem;margin-bottom:4px}
+.q-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.9rem;margin-bottom:10px}
+.q-text{font-size:1.2rem;font-weight:700;margin:0 0 18px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;text-align:start;width:100%;padding:13px 16px;border:2px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);cursor:pointer;transition:border-color .15s,background .15s}
+.opt:hover{border-color:#a5b4fc}
+.opt .k{flex:0 0 30px;height:30px;border-radius:50%;background:var(--line);display:grid;place-items:center;font-weight:800;font-size:.9rem}
+.opt.sel{border-color:var(--primary);background:var(--primary-l)}
+.opt.sel .k{background:var(--primary);color:#fff}
+.dots{display:flex;gap:6px;flex-wrap:wrap;margin-top:20px}
+.dot{width:30px;height:30px;border-radius:8px;border:2px solid var(--line);background:#fff;font-size:.8rem;font-weight:700;color:var(--muted);cursor:pointer}
+.dot.ans{background:var(--primary-l);border-color:#a5b4fc;color:var(--primary-d)}
+.dot.cur{background:var(--primary);border-color:var(--primary);color:#fff}
+
+/* Result */
+.res-head{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.ring{--p:0;--c:var(--primary);width:128px;height:128px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center;flex:0 0 auto}
+.ring div{width:98px;height:98px;border-radius:50%;background:#fff;display:grid;place-items:center;text-align:center;line-height:1.2}
+.ring b{font-size:1.6rem}
+.ring small{color:var(--muted)}
+.badge{display:inline-block;padding:3px 14px;border-radius:999px;font-weight:800;font-size:.9rem}
+.badge.ok{background:var(--ok-l);color:var(--ok)}
+.badge.warn{background:var(--warn-l);color:var(--warn)}
+.badge.bad{background:var(--bad-l);color:var(--bad)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.box{border-radius:12px;padding:14px 16px}
+.box h4{margin:0 0 6px}
+.box ul{margin:0;padding-inline-start:20px}
+.box.good{background:var(--ok-l)} .box.good h4{color:var(--ok)}
+.box.weak{background:var(--warn-l)} .box.weak h4{color:var(--warn)}
+details{border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-top:8px;background:#fcfcff}
+summary{cursor:pointer;font-weight:700}
+details p{margin:6px 0}
+.tag-ok{color:var(--ok);font-weight:700}
+.tag-bad{color:var(--bad);font-weight:700}
+.note{background:var(--primary-l);border-radius:12px;padding:10px 14px;margin-top:14px;font-size:.92rem}
+
+/* Summary */
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.row .t{font-weight:700}
+.row .s{color:var(--muted);font-size:.88rem}
+.total{display:flex;justify-content:space-between;align-items:center;background:var(--primary);color:#fff;border-radius:12px;padding:14px 18px;font-weight:800;margin:14px 0}
+.total span{font-size:1.5rem}
+.status{border-radius:12px;padding:14px 16px;margin-top:14px;font-weight:700}
+.status.sending{background:var(--primary-l);color:var(--primary-d)}
+.status.success{background:var(--ok-l);color:var(--ok)}
+.status.fail{background:var(--bad-l);color:var(--bad)}
+.spin{display:inline-block;width:16px;height:16px;border:3px solid #c7cbff;border-top-color:var(--primary);border-radius:50%;animation:sp .8s linear infinite;vertical-align:middle;margin-inline-end:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.fade{animation:fd .3s ease}
+@keyframes fd{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+@media (max-width:600px){
+  .card{padding:18px}
+  h1{font-size:1.4rem}
+  .cols{grid-template-columns:1fr}
+  .q-text{font-size:1.08rem}
+  .btn{padding:12px 16px}
+  .actions .btn{flex:1}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar" id="topbar" hidden>
+    <div class="top-row">
+      <div class="who"><span id="whoName"></span><small id="whoId"></small></div>
+      <div class="score-chip">الدرجة المحققة: <span id="scoreNow">0</span> / <span id="scoreMax">20</span></div>
+    </div>
+    <div class="bar"><i id="barFill"></i></div>
+    <div class="bar-label"><span id="barText">تم الإجابة عن 0 من 20 سؤالاً</span><span id="barPct">0%</span></div>
+  </header>
+
+  <main>
+    <!-- 1) تسجيل الدخول -->
+    <section id="screen-login" class="card fade">
+      <h1>اختبار الضوء: الطبيعة الموجية والانعكاس والانكسار</h1>
+      <p class="lead">أدخل بياناتك للبدء. لن يبدأ الاختبار قبل إدخال الاسم الثلاثي ورقم الهوية / الرقم الأكاديمي.</p>
+      <div class="std">
+        <b>المعيار 13.6.6:</b> معرفة مبادئ الضوء
+        <ol>
+          <li>يُبيّن طبيعة الضوء الموجية وخصائصه.</li>
+          <li>يُفسّر ظاهرتي انعكاس وانكسار الضوء وتطبيقاتهما.</li>
+        </ol>
+        <div class="hint" style="margin-top:8px">20 سؤالاً (10 لكل مؤشر) · درجة واحدة لكل سؤال · حد الإتقان <span id="masteryTxt"></span></div>
+      </div>
+      <form id="loginForm" novalidate autocomplete="off">
+        <div class="field">
+          <label for="fName">الاسم الثلاثي</label>
+          <input type="text" id="fName" placeholder="مثال: أحمد محمد عبدالله" required>
+          <div class="error" id="errName"></div>
+        </div>
+        <div class="field">
+          <label for="fId">رقم الهوية / الرقم الأكاديمي</label>
+          <input type="text" id="fId" inputmode="numeric" placeholder="مثال: 1234567890" required>
+          <div class="error" id="errId"></div>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">ابدأ الاختبار</button>
+      </form>
+    </section>
+
+    <!-- 2) الأسئلة -->
+    <section id="screen-quiz" class="card" hidden>
+      <div class="stepper" id="stepper"></div>
+      <div class="ind-title" id="indTitle"></div>
+      <div class="q-meta"><span id="qCount"></span><span>الدرجة: 1</span></div>
+      <p class="q-text" id="qText"></p>
+      <div class="opts" id="opts"></div>
+      <div class="dots" id="dots"></div>
+      <div class="actions between">
+        <button class="btn btn-light" id="btnPrev">السابق</button>
+        <button class="btn btn-primary" id="btnNext">التالي</button>
+      </div>
+    </section>
+
+    <!-- 3) تغذية راجعة للمؤشر -->
+    <section id="screen-result" class="card" hidden></section>
+
+    <!-- 4) ملخص قبل الإنهاء -->
+    <section id="screen-summary" class="card" hidden></section>
+
+    <!-- 5) النهاية -->
+    <section id="screen-final" class="card" hidden></section>
+  </main>
+</div>
+
+<script>
+/* =====================================================================
+   إعدادات المعلم  (عدّل هذه القيم فقط)
+   ===================================================================== */
+const CONFIG = {
+  // 1) Formspree: أنشئ نموذجاً على formspree.io بإيميل المعلم، وضع رابطه هنا
+  FORMSPREE_ENDPOINT: "https://formspree.io/f/YOUR_FORM_ID",
+  // 2) (اختياري) رابط Google Apps Script لحفظ النتائج في Google Sheets (الكود في آخر الملف)
+  APPS_SCRIPT_URL: "",
+  // بريد المعلم: يُستخدم فقط للخيار الاحتياطي (فتح تطبيق البريد) إن فشل الإرسال التلقائي
+  TEACHER_EMAIL: "teacher@example.com",
+  // نسبة الإتقان المطلوبة لكل مؤشر
+  MASTERY_PERCENT: 80
+};
+
+/* =====================================================================
+   بنك الأسئلة: الخيار الأول في كل سؤال هو الإجابة الصحيحة (يتم خلط الخيارات تلقائياً)
+   ===================================================================== */
+const INDICATORS = [
+  {
+    id: 1,
+    title: "يُبيّن طبيعة الضوء الموجية وخصائصه",
+    questions: [
+      { q: "الضوء موجة من النوع:",
+        o: ["كهرومغناطيسية", "ميكانيكية طولية", "صوتية", "ميكانيكية تحتاج إلى وسط مادي"],
+        concept: "نوع الموجة الضوئية",
+        explain: "الضوء موجة كهرومغناطيسية تتكون من مجالين كهربائي ومغناطيسي متذبذبين ومتعامدين، ولا تحتاج إلى وسط مادي." },
+      { q: "تبلغ سرعة الضوء في الفراغ تقريباً:",
+        o: ["3 × 10⁸ م/ث", "340 م/ث", "3 × 10⁶ م/ث", "3 × 10⁵ م/ث"],
+        concept: "سرعة الضوء في الفراغ",
+        explain: "سرعة الضوء في الفراغ ثابتة وتساوي تقريباً 3 × 10⁸ م/ث، أما 340 م/ث فهي سرعة الصوت في الهواء." },
+      { q: "أي مما يلي يدل على أن الضوء لا يحتاج إلى وسط مادي لينتقل؟",
+        o: ["وصول ضوء الشمس إلى الأرض عبر الفضاء", "سماع صوت الرعد بعد رؤية البرق", "انتقال الصوت في الماء", "اهتزاز وتر الجيتار"],
+        concept: "الانتشار في الفراغ",
+        explain: "ضوء الشمس يصل إلى الأرض عبر الفضاء شبه الفارغ، وهذا يدل على أن الموجات الضوئية تنتشر دون وسط مادي بخلاف الموجات الميكانيكية." },
+      { q: "العلاقة الصحيحة بين سرعة الضوء (c) والتردد (f) والطول الموجي (λ) هي:",
+        o: ["c = λ × f", "c = λ ÷ f", "c = f ÷ λ", "c = λ + f"],
+        concept: "العلاقة بين السرعة والتردد والطول الموجي",
+        explain: "سرعة أي موجة = الطول الموجي × التردد، فللضوء في الفراغ: c = λ f." },
+      { q: "ضوء تردده 5 × 10¹⁴ هرتز في الفراغ، فإن طوله الموجي يساوي:",
+        o: ["6 × 10⁻⁷ م", "1.5 × 10²³ م", "6 × 10⁻⁵ م", "1.67 × 10⁶ م"],
+        concept: "حساب الطول الموجي",
+        explain: "λ = c ÷ f = (3 × 10⁸) ÷ (5 × 10¹⁴) = 6 × 10⁻⁷ م (أي 600 نانومتر)." },
+      { q: "عند زيادة تردد الضوء في الفراغ، فإن طوله الموجي:",
+        o: ["يقل", "يزداد", "لا يتغير", "يصبح صفراً"],
+        concept: "العلاقة العكسية بين التردد والطول الموجي",
+        explain: "السرعة في الفراغ ثابتة، لذا يتناسب التردد عكسياً مع الطول الموجي: إذا زاد أحدهما قلّ الآخر." },
+      { q: "أي ألوان الضوء المرئي التالية له أكبر تردد وأقصر طول موجي؟",
+        o: ["البنفسجي", "الأحمر", "الأخضر", "الأصفر"],
+        concept: "الطيف المرئي",
+        explain: "في الطيف المرئي يمتلك اللون البنفسجي أعلى تردد وأقصر طول موجي، ويمتلك الأحمر أقل تردد وأطول طول موجي." },
+      { q: "أي الظواهر التالية تدل على الطبيعة الموجية للضوء؟",
+        o: ["التداخل في تجربة الشق المزدوج", "الانتشار في خطوط مستقيمة", "تكوّن الظلال", "تسخين الجسم المظلم عند امتصاصه للضوء"],
+        concept: "الدليل على الطبيعة الموجية",
+        explain: "التداخل (وكذلك الحيود) ظاهرة موجية مميزة، وقد أثبتها يونج بتجربة الشق المزدوج." },
+      { q: "يُقال إن الضوء موجة عرضية؛ أي أن اتجاه اهتزاز المجالين الكهربائي والمغناطيسي:",
+        o: ["عمودي على اتجاه انتشار الموجة", "موازٍ لاتجاه انتشار الموجة", "عكس اتجاه انتشار الموجة", "عشوائي دون علاقة بالانتشار"],
+        concept: "الموجة العرضية",
+        explain: "في الموجة العرضية تكون الاهتزازات عمودية على اتجاه الانتشار، وهذا ما يفسر إمكانية استقطاب الضوء." },
+      { q: "عند انتقال الضوء من الهواء إلى الزجاج، أي الكميات التالية تبقى ثابتة؟",
+        o: ["التردد", "السرعة", "الطول الموجي", "السرعة والطول الموجي معاً"],
+        concept: "ثبات التردد عند تغير الوسط",
+        explain: "التردد تحدده الجهة المصدرة للموجة فلا يتغير بتغير الوسط، أما السرعة والطول الموجي فيقلان في الزجاج." }
+    ]
+  },
+  {
+    id: 2,
+    title: "يُفسّر ظاهرتي انعكاس وانكسار الضوء وتطبيقاتهما",
+    questions: [
+      { q: "ينص قانون انعكاس الضوء على أن:",
+        o: ["زاوية السقوط = زاوية الانعكاس", "زاوية السقوط = ضعف زاوية الانعكاس", "زاوية الانعكاس = 90° دائماً", "زاوية السقوط + زاوية الانعكاس = 90° دائماً"],
+        concept: "قانون الانعكاس",
+        explain: "زاوية السقوط تساوي زاوية الانعكاس، ويقع الشعاعان الساقط والمنعكس والعمود المقام على السطح في مستوى واحد." },
+      { q: "الصورة المتكوّنة لجسم أمام مرآة مستوية تكون:",
+        o: ["تقديرية، معتدلة، مساوية للجسم في الحجم", "حقيقية، مقلوبة، مصغرة", "تقديرية، مقلوبة، مكبرة", "حقيقية، معتدلة، مساوية للجسم"],
+        concept: "خصائص الصورة في المرآة المستوية",
+        explain: "المرآة المستوية تكوّن صورة تقديرية معتدلة مساوية للجسم، وبُعدها خلف المرآة يساوي بُعد الجسم أمامها." },
+      { q: "سقط شعاع ضوئي على مرآة مستوية بزاوية سقوط 30°. الزاوية بين الشعاع الساقط والشعاع المنعكس تساوي:",
+        o: ["60°", "30°", "90°", "120°"],
+        concept: "تطبيق قانون الانعكاس",
+        explain: "زاوية الانعكاس = زاوية السقوط = 30°، فالزاوية بين الشعاعين = 30° + 30° = 60°." },
+      { q: "يبدو قلم مغمور جزئياً في كوب ماء كأنه مكسور عند موضع سطح الماء. سبب ذلك:",
+        o: ["انكسار الضوء عند انتقاله من الماء إلى الهواء", "انعكاس الضوء عن سطح القلم", "تحلل الضوء إلى ألوانه", "امتصاص الماء للضوء"],
+        concept: "تفسير ظاهرة الانكسار",
+        explain: "تتغير سرعة الضوء عند انتقاله بين الماء والهواء فينحرف مساره (ينكسر)، فيبدو القلم مكسوراً." },
+      { q: "يُعرَّف معامل الانكسار المطلق لوسط (n) بأنه:",
+        o: ["سرعة الضوء في الفراغ ÷ سرعته في الوسط", "سرعة الضوء في الوسط ÷ سرعته في الفراغ", "سرعة الضوء في الوسط × سرعته في الفراغ", "تردد الضوء في الوسط ÷ تردده في الفراغ"],
+        concept: "معامل الانكسار",
+        explain: "n = c ÷ v، ولذلك فإن معامل الانكسار لأي وسط مادي أكبر من 1." },
+      { q: "عند انتقال شعاع ضوئي مائل من الهواء إلى الماء، فإنه ينكسر:",
+        o: ["مقترباً من العمود المقام على السطح", "مبتعداً عن العمود المقام على السطح", "دون أي انحراف", "فينعكس كلياً"],
+        concept: "اتجاه انكسار الشعاع",
+        explain: "الماء أكبر كثافة ضوئية من الهواء (سرعة الضوء فيه أقل)، فينكسر الشعاع مقترباً من العمود." },
+      { q: "سرعة الضوء في وسط معامل انكساره 1.5 تساوي تقريباً:",
+        o: ["2 × 10⁸ م/ث", "4.5 × 10⁸ م/ث", "3 × 10⁸ م/ث", "1.5 × 10⁸ م/ث"],
+        concept: "حساب سرعة الضوء في وسط",
+        explain: "v = c ÷ n = (3 × 10⁸) ÷ 1.5 = 2 × 10⁸ م/ث." },
+      { q: "تُعبَّر العلاقة الرياضية لقانون سنل للانكسار بـ:",
+        o: ["n₁ جا θ₁ = n₂ جا θ₂", "n₁ جتا θ₁ = n₂ جتا θ₂", "n₁ ÷ θ₁ = n₂ ÷ θ₂", "n₁ + θ₁ = n₂ + θ₂"],
+        concept: "قانون سنل",
+        explain: "ينص قانون سنل على أن n₁ جا θ₁ = n₂ جا θ₂، حيث θ الزاوية مع العمود المقام على السطح الفاصل." },
+      { q: "يحدث الانعكاس الكلي الداخلي عندما:",
+        o: ["ينتقل الضوء من وسط أكبر معامل انكسار إلى أقل، وتزيد زاوية السقوط عن الزاوية الحرجة", "ينتقل الضوء من وسط أقل معامل انكسار إلى أكبر، وتزيد زاوية السقوط عن الزاوية الحرجة", "تكون زاوية السقوط صفراً", "ينتقل الضوء بين وسطين متساويين في معامل الانكسار"],
+        concept: "شرطا الانعكاس الكلي الداخلي",
+        explain: "يتطلب الانعكاس الكلي الداخلي شرطين: الانتقال من وسط أكبر كثافة ضوئية إلى أقل، وأن تكون زاوية السقوط أكبر من الزاوية الحرجة." },
+      { q: "أي التطبيقات التالية يعتمد على ظاهرة الانعكاس الكلي الداخلي؟",
+        o: ["الألياف الضوئية في الاتصالات", "المرآة المستوية في المنزل", "عدسة الكاميرا المكبّرة", "الظل الناتج عن جسم معتم"],
+        concept: "تطبيقات الانعكاس الكلي",
+        explain: "تنقل الألياف الضوئية الإشارات عبر انعكاسات كلية داخلية متتالية داخل قلب الليف دون فقد يُذكر." }
+    ]
+  }
+];
+
+/* =====================================================================
+   الحالة والأدوات
+   ===================================================================== */
+const MASTERY = CONFIG.MASTERY_PERCENT;
+const PER = 10;
+const LETTERS = ["أ", "ب", "ج", "د"];
+const $ = id => document.getElementById(id);
+const state = { student: null, cur: 0, qi: 0, run: [], active: false, results: [], finished: false, report: null };
+
+function shuffle(a){ const b=a.slice(); for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+function esc(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function normDigits(s){ return s.replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)); }
+function show(id){
+  ["screen-login","screen-quiz","screen-result","screen-summary","screen-final"].forEach(s=>$(s).hidden = s!==id);
+  const el=$(id); el.classList.remove("fade"); void el.offsetWidth; el.classList.add("fade");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function level(pct){
+  if(pct>=MASTERY) return {cls:"ok", label:"متقن", color:"#15803d"};
+  if(pct>=MASTERY-20) return {cls:"warn", label:"يقترب من الإتقان", color:"#b45309"};
+  return {cls:"bad", label:"يحتاج إلى تعزيز", color:"#b91c1c"};
+}
+function totalScore(){ return state.results.reduce((s,r)=>s+(r?r.best:0),0); }
+function maxScore(){ return INDICATORS.length*PER; }
+
+/* ---------- الشريط العلوي ---------- */
+function renderTop(){
+  $("scoreNow").textContent = totalScore();
+  $("scoreMax").textContent = maxScore();
+  let answered = 0;
+  INDICATORS.forEach((_,j)=>{
+    if(state.active && j===state.cur) answered += state.run.filter(r=>r.chosen!==null).length;
+    else if(state.results[j]) answered += PER;
+  });
+  const pct = Math.round(answered/maxScore()*100);
+  $("barFill").style.width = pct+"%";
+  $("barPct").textContent = pct+"%";
+  $("barText").textContent = `تم الإجابة عن ${answered} من ${maxScore()} سؤالاً`;
+}
+
+/* ---------- تسجيل الدخول ---------- */
+$("masteryTxt").textContent = MASTERY+"%";
+$("loginForm").addEventListener("submit", e=>{
+  e.preventDefault();
+  const name = $("fName").value.trim().replace(/\s+/g," ");
+  const id = normDigits($("fId").value.trim());
+  let ok = true;
+  $("errName").textContent = ""; $("errId").textContent = "";
+  const words = name.split(" ").filter(Boolean);
+  if(words.length<3 || !/^[\p{L}\s]+$/u.test(name) || words.some(w=>w.length<2)){
+    $("errName").textContent = "يرجى كتابة الاسم الثلاثي كاملاً (ثلاث كلمات على الأقل، حروف فقط).";
+    ok = false;
+  }
+  if(!/^[0-9A-Za-z]{5,15}$/.test(id)){
+    $("errId").textContent = "رقم الهوية / الرقم الأكاديمي يجب أن يتكون من 5 إلى 15 خانة (أرقام أو حروف إنجليزية).";
+    ok = false;
+  }
+  if(!ok) return;
+  state.student = {name, id};
+  $("whoName").textContent = name;
+  $("whoId").textContent = "الهوية / الرقم الأكاديمي: "+id;
+  $("topbar").hidden = false;
+  startIndicator(0);
+});
+
+/* ---------- الأسئلة ---------- */
+function startIndicator(i){
+  const ind = INDICATORS[i];
+  const retake = !!state.results[i];
+  const base = retake ? shuffle(ind.questions) : ind.questions;   // الترتيب ثابت في المحاولة الأولى ويُخلط عند الإعادة
+  state.cur = i; state.qi = 0; state.active = true;
+  state.run = base.map(q=>({
+    q:q.q, concept:q.concept, explain:q.explain,
+    opts: shuffle(q.o.map((t,k)=>({t, ok:k===0}))), chosen:null
+  }));
+  show("screen-quiz"); renderQuestion(); renderTop();
+}
+function renderQuestion(){
+  const i = state.cur, r = state.run[state.qi];
+  $("stepper").innerHTML = INDICATORS.map((ind,j)=>{
+    const c = j===i ? "current" : (state.results[j] ? "done" : "");
+    return `<span class="pill ${c}">المؤشر ${j+1}${state.results[j]&&j!==i?" ✓":""}</span>`;
+  }).join("");
+  $("indTitle").textContent = `المؤشر ${i+1}: ${INDICATORS[i].title}`;
+  $("qCount").textContent = `السؤال ${state.qi+1} من ${PER}`;
+  $("qText").textContent = r.q;
+  $("opts").innerHTML = r.opts.map((o,k)=>
+    `<button type="button" class="opt ${r.chosen===k?"sel":""}" data-k="${k}"><span class="k">${LETTERS[k]}</span><span>${esc(o.t)}</span></button>`
+  ).join("");
+  $("dots").innerHTML = state.run.map((x,k)=>
+    `<button type="button" class="dot ${k===state.qi?"cur":(x.chosen!==null?"ans":"")}" data-d="${k}" aria-label="السؤال ${k+1}">${k+1}</button>`
+  ).join("");
+  $("btnPrev").disabled = state.qi===0;
+  const last = state.qi===PER-1;
+  $("btnNext").textContent = last ? "إنهاء المؤشر وعرض التغذية الراجعة" : "التالي";
+  $("btnNext").disabled = last ? state.run.some(x=>x.chosen===null) : r.chosen===null;
+}
+$("opts").addEventListener("click", e=>{
+  const b = e.target.closest(".opt"); if(!b) return;
+  state.run[state.qi].chosen = +b.dataset.k;
+  renderQuestion(); renderTop();
+});
+$("dots").addEventListener("click", e=>{
+  const b = e.target.closest(".dot"); if(!b) return;
+  state.qi = +b.dataset.d; renderQuestion();
+});
+$("btnPrev").addEventListener("click", ()=>{ if(state.qi>0){ state.qi--; renderQuestion(); } });
+$("btnNext").addEventListener("click", ()=>{
+  if(state.qi<PER-1){ state.qi++; renderQuestion(); } else finishIndicator();
+});
+
+/* ---------- التغذية الراجعة للمؤشر ---------- */
+function finishIndicator(){
+  const i = state.cur;
+  const score = state.run.filter(r=>r.opts[r.chosen].ok).length;
+  const res = state.results[i] || {best:0, attempts:0, history:[]};
+  res.attempts++; res.history.push(score); res.best = Math.max(res.best, score);
+  state.results[i] = res;
+  state.active = false;
+  renderTop();
+  renderResult(i, score);
+}
+function renderResult(i, score){
+  const pct = score/PER*100, lv = level(pct), res = state.results[i];
+  const good = state.run.filter(r=>r.opts[r.chosen].ok);
+  const bad = state.run.filter(r=>!r.opts[r.chosen].ok);
+  const canRetry = (res.best/PER*100) < MASTERY;
+  const isLast = i===INDICATORS.length-1;
+  const msg = pct>=MASTERY
+    ? "أحسنت! حققت مستوى الإتقان المطلوب في هذا المؤشر."
+    : pct>=MASTERY-20
+      ? "أنت قريب من الإتقان. راجع المفاهيم الموضحة أدناه ثم أعد محاولة المؤشر."
+      : "تحتاج إلى مراجعة المفاهيم الموضحة أدناه، ثم أعد محاولة هذا المؤشر.";
+  $("screen-result").innerHTML = `
+    <div class="ind-title">التغذية الراجعة: المؤشر ${i+1}</div>
+    <h2>${esc(INDICATORS[i].title)}</h2>
+    <div class="res-head">
+      <div class="ring" style="--p:${pct};--c:${lv.color}"><div><span><b>${score}</b><small> / ${PER}</small></span></div></div>
+      <div>
+        <div style="font-size:1.1rem">نسبة الإتقان: <b>${pct}%</b></div>
+        <div style="margin:6px 0"><span class="badge ${lv.cls}">${lv.label}</span></div>
+        <div style="color:var(--muted)">${msg}</div>
+      </div>
+    </div>
+    <div class="cols">
+      <div class="box good"><h4>✔ نقاط القوة</h4>
+        ${good.length ? `<ul>${good.map(r=>`<li>${esc(r.concept)}</li>`).join("")}</ul>` : "<div>لا توجد مفاهيم متقنة في هذه المحاولة بعد.</div>"}
+      </div>
+      <div class="box weak"><h4>✎ مفاهيم تحتاج إلى تحسين</h4>
+        ${bad.length ? `<ul>${bad.map(r=>`<li>${esc(r.concept)}</li>`).join("")}</ul>` : "<div>لا توجد، عمل ممتاز!</div>"}
+      </div>
+    </div>
+    ${bad.length ? `<h3>مراجعة الأسئلة التي أخطأت فيها</h3>` + bad.map(r=>{
+        const mine = r.opts[r.chosen].t, right = r.opts.find(o=>o.ok).t;
+        return `<details><summary>${esc(r.q)}</summary>
+          <p><span class="tag-bad">إجابتك:</span> ${esc(mine)}</p>
+          <p><span class="tag-ok">الإجابة الصحيحة:</span> ${esc(right)}</p>
+          <p>${esc(r.explain)}</p></details>`;
+      }).join("") : ""}
+    ${res.attempts>1 ? `<div class="note">عدد المحاولات في هذا المؤشر: ${res.attempts} · محاولاتك: ${res.history.join("، ")} · الدرجة المعتمدة (الأفضل): <b>${res.best} / ${PER}</b></div>` : ""}
+    <div class="actions">
+      ${canRetry ? `<button class="btn btn-ghost" id="rRetry">إعادة اختبار هذا المؤشر فقط</button>` : ""}
+      <button class="btn btn-primary" id="rNext">${isLast || state.results[i+1] ? "عرض الملخص العام" : "المؤشر التالي"}</button>
+    </div>`;
+  show("screen-result");
+  const r1 = $("rRetry"); if(r1) r1.onclick = ()=>startIndicator(i);
+  $("rNext").onclick = ()=>{ (!isLast && !state.results[i+1]) ? startIndicator(i+1) : renderSummary(); };
+}
+
+/* ---------- الملخص العام ---------- */
+function renderSummary(){
+  const total = totalScore(), max = maxScore();
+  const needs = INDICATORS.some((_,j)=>state.results[j] && state.results[j].best/PER*100 < MASTERY);
+  $("screen-summary").innerHTML = `
+    <h2>ملخص نتائجك</h2>
+    <p class="lead">${needs ? "يمكنك إعادة اختبار المؤشرات التي لم تبلغ فيها حد الإتقان فقط، ثم إنهاء الاختبار." : "حققت الإتقان في جميع المؤشرات. يمكنك الآن إنهاء الاختبار وإرسال النتيجة."}</p>
+    ${INDICATORS.map((ind,j)=>{
+      const r = state.results[j], pct = r.best/PER*100, lv = level(pct);
+      return `<div class="row">
+        <div><div class="t">المؤشر ${j+1}: ${esc(ind.title)}</div>
+          <div class="s">الدرجة: ${r.best} / ${PER} · الإتقان ${pct}% · المحاولات: ${r.attempts}</div></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="badge ${lv.cls}">${lv.label}</span>
+          ${pct<MASTERY ? `<button class="btn btn-ghost" data-retry="${j}">إعادة هذا المؤشر</button>` : ""}
+        </div></div>`;
+    }).join("")}
+    <div class="total"><div>الدرجة الكلية</div><div><span>${total}</span> / ${max}</div></div>
+    <div class="note">عند الضغط على «إنهاء الاختبار» ستُرسل النتيجة تلقائياً إلى معلم المادة ولا يمكن التعديل بعد ذلك.</div>
+    <div class="actions"><button class="btn btn-primary btn-block" id="btnFinish">إنهاء الاختبار وإرسال النتيجة للمعلم</button></div>`;
+  show("screen-summary");
+  $("screen-summary").querySelectorAll("[data-retry]").forEach(b=>b.onclick=()=>startIndicator(+b.dataset.retry));
+  $("btnFinish").onclick = finalize;
+}
+
+/* ---------- الإنهاء والإرسال ---------- */
+function buildReport(){
+  const s = state.student, total = totalScore(), max = maxScore();
+  const now = new Date();
+  const payload = {
+    _subject: `نتيجة اختبار الضوء - ${s.name}`,
+    student_name: s.name,
+    student_id: s.id,
+    total_score: `${total}/${max}`,
+    percentage: Math.round(total/max*100)+"%",
+    submitted_at: now.toLocaleString("ar-SA"),
+    submitted_iso: now.toISOString()
+  };
+  const lines = [
+    "تقرير اختبار الضوء - المعيار 13.6.6",
+    "اسم الطالب: "+s.name,
+    "رقم الهوية / الرقم الأكاديمي: "+s.id,
+    "----------------------------------------"
+  ];
+  INDICATORS.forEach((ind,j)=>{
+    const r = state.results[j];
+    payload[`indicator_${j+1}_score`] = `${r.best}/${PER}`;
+    payload[`indicator_${j+1}_mastery`] = (r.best/PER*100)+"%";
+    payload[`indicator_${j+1}_attempts`] = r.attempts;
+    lines.push(`المؤشر ${j+1} (${ind.title}): ${r.best}/${PER} - إتقان ${r.best/PER*100}% - المحاولات: ${r.attempts} [${r.history.join(", ")}]`);
+  });
+  lines.push("----------------------------------------");
+  lines.push(`الدرجة الكلية: ${total}/${max} (${payload.percentage})`);
+  lines.push("وقت الإرسال: "+payload.submitted_at);
+  payload.report = lines.join("\n");
+  return payload;
+}
+async function sendReport(payload){
+  let sent = false;
+  if(CONFIG.FORMSPREE_ENDPOINT && !CONFIG.FORMSPREE_ENDPOINT.includes("YOUR_FORM_ID")){
+    const res = await fetch(CONFIG.FORMSPREE_ENDPOINT,{
+      method:"POST",
+      headers:{"Accept":"application/json","Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    sent = true;
+  }
+  if(CONFIG.APPS_SCRIPT_URL){
+    await fetch(CONFIG.APPS_SCRIPT_URL,{
+      method:"POST", mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify(payload)
+    });
+    sent = true;
+  }
+  if(!sent) throw new Error("NOT_CONFIGURED");
+}
+function finalize(){
+  state.finished = true;
+  state.report = buildReport();
+  const total = totalScore(), max = maxScore(), p = state.report;
+  $("screen-final").innerHTML = `
+    <h2>تم إنهاء الاختبار 🎉</h2>
+    <p class="lead">${esc(state.student.name)}، شكراً لك على إتمام الاختبار.</p>
+    ${INDICATORS.map((ind,j)=>{
+      const r = state.results[j], lv = level(r.best/PER*100);
+      return `<div class="row"><div><div class="t">المؤشر ${j+1}</div><div class="s">${esc(ind.title)}</div></div>
+        <div><b>${r.best} / ${PER}</b> <span class="badge ${lv.cls}">${lv.label}</span></div></div>`;
+    }).join("")}
+    <div class="total"><div>الدرجة الكلية (${p.percentage})</div><div><span>${total}</span> / ${max}</div></div>
+    <div id="sendStatus"></div>
+    <div class="actions" id="fallback" hidden>
+      <button class="btn btn-primary" id="btnRetrySend">إعادة محاولة الإرسال</button>
+      <button class="btn btn-ghost" id="btnDownload">تحميل التقرير</button>
+      <button class="btn btn-ghost" id="btnMail">إرسال عبر البريد</button>
+    </div>`;
+  show("screen-final");
+  $("btnRetrySend").onclick = doSend;
+  $("btnDownload").onclick = downloadReport;
+  $("btnMail").onclick = mailReport;
+  doSend();
+}
+async function doSend(){
+  const st = $("sendStatus"); $("fallback").hidden = true;
+  st.innerHTML = `<div class="status sending"><span class="spin"></span>جارٍ إرسال النتيجة إلى المعلم...</div>`;
+  try{
+    await sendReport(state.report);
+    st.innerHTML = `<div class="status success">✔ تم إرسال تقريرك إلى معلم المادة بنجاح.</div>`;
+  }catch(err){
+    const nc = err.message==="NOT_CONFIGURED";
+    st.innerHTML = `<div class="status fail">${nc
+      ? "لم يتم ربط النموذج ببريد المعلم بعد (إعدادات CONFIG). يمكنك تحميل التقرير أو إرساله بالبريد وتسليمه للمعلم."
+      : "تعذر الإرسال التلقائي (تحقق من الاتصال بالإنترنت). أعد المحاولة أو استخدم الخيارات الاحتياطية."}</div>`;
+    $("fallback").hidden = false;
+    $("btnRetrySend").hidden = nc;
+  }
+}
+function downloadReport(){
+  const blob = new Blob(["\ufeff"+state.report.report],{type:"text/plain;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `نتيجة_${state.student.id}.txt`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function mailReport(){
+  location.href = `mailto:${encodeURIComponent(CONFIG.TEACHER_EMAIL)}?subject=${encodeURIComponent(state.report._subject)}&body=${encodeURIComponent(state.report.report)}`;
+}
+
+/* تنبيه عند محاولة مغادرة الصفحة أثناء الاختبار */
+window.addEventListener("beforeunload", e=>{
+  if(state.student && !state.finished){ e.preventDefault(); e.returnValue = ""; }
+});
+</script>
+
+<!--
+=======================================================================
+ كود Google Apps Script (اختياري) لحفظ النتائج في Google Sheets
+ 1) أنشئ Google Sheet جديدة ← الإضافات ← Apps Script ← الصق الكود التالي
+ 2) نشر ← نشر كتطبيق ويب ← التنفيذ باسمي ← الوصول: أي شخص
+ 3) انسخ رابط التطبيق وضعه في CONFIG.APPS_SCRIPT_URL
+
+ function doPost(e){
+   const d = JSON.parse(e.postData.contents);
+   const sh = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+   if(sh.getLastRow()===0){
+     sh.appendRow(["الوقت","الاسم","رقم الهوية","المؤشر 1","المؤشر 2","الدرجة الكلية","النسبة"]);
+   }
+   sh.appendRow([d.submitted_at,d.student_name,d.student_id,d.indicator_1_score,d.indicator_2_score,d.total_score,d.percentage]);
+   // لإرسال إيميل للمعلم أيضاً:
+   // MailApp.sendEmail("teacher@example.com", d._subject, d.report);
+   return ContentService.createTextOutput("ok");
+ }
+=======================================================================
+-->
+</body>
+</html>
